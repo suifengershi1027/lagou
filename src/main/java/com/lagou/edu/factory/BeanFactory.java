@@ -89,12 +89,18 @@ public class BeanFactory {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             Object obj = entry.getValue();
             Class clazz = obj.getClass();
-
+            //1.判断是否被transaction修饰
             boolean trans = clazz.isAnnotationPresent(CustomTransactional.class);
             if (!trans) {
                 continue;
             }
-            map.put(entry.getKey(), proxyFactory.getJdkProxy(obj)) ;
+            //2.判断是否实现接口
+            Class<?>[] interfaces = clazz.getInterfaces();
+            if (interfaces.length == 0) {
+                map.put(entry.getKey(), proxyFactory.getCglibProxy(obj)) ;
+            } else {
+                map.put(entry.getKey(), proxyFactory.getJdkProxy(obj)) ;
+            }
         }
     }
 
